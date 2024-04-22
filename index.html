@@ -37,12 +37,7 @@
         <script src="js/fabric.min.js"></script>
         <script src="js/drawing.js"></script>
         <script type="text/javascript">
-
-
             const dialog = document.querySelector("dialog");
-            
-            
-
             document.getElementById("puntos").innerHTML = puntos;
             const ganar = () => {
                 if (puntos >= 10) {
@@ -57,8 +52,6 @@
 
             document.getElementById("puntos").innerHTML = puntos;
             var modelo = null;
-
-            //Tomar y configurar el canvas
             var canvas = document.getElementById("bigcanvas");
             var ctx1 = canvas.getContext("2d", [{willReadFrequently: true }]);
             var smallcanvas = document.getElementById("smallcanvas");
@@ -70,23 +63,20 @@
             }
 
             const predecir = () => {
-                //Pasar canvas a version 28x28
                 resample_single(canvas, 28, 28, smallcanvas);
-
                 var imgData = ctx2.getImageData(0,0,28,28);
-                var arr = []; //El arreglo completo
-                var arr28 = []; //Al llegar a 28 posiciones se pone en 'arr' como un nuevo indice
+                var arr = [];
+                var arr28 = [];
                 for (var p=0, i=0; p < imgData.data.length; p+=4) {
                     var valor = imgData.data[p+3]/255;
-                    arr28.push([valor]); //Agregar al arr28 y normalizar a 0-1. Aparte queda dentro de un arreglo en el indice 0... again
+                    arr28.push([valor]);
                     if (arr28.length == 28) {
                         arr.push(arr28);
                         arr28 = [];
                     }
                 }
 
-                arr = [arr]; //Meter el arreglo en otro arreglo por que si no tio tensorflow se enoja >:(
-                //Nah basicamente Debe estar en un arreglo nuevo en el indice 0, por ser un tensor4d en forma 1, 28, 28, 1
+                arr = [arr]; 
                 var tensor4 = tf.tensor4d(arr);
                 var resultados = modelo.predict(tensor4).dataSync();
                 var mayorIndice = resultados.indexOf(Math.max.apply(null, resultados));
@@ -180,30 +170,25 @@
                         data2[x2 + 3] = gx_a / weights_alpha;
                     }
                 }
-                //Ya que esta, exagerarlo. Blancos blancos y negros negros..?
                 for (var p=0; p < data2.length; p += 4) {
-                    var gris = data2[p]; //Esta en blanco y negro
-
+                    var gris = data2[p];
                     if (gris < 100) {
-                        gris = 0; //exagerarlo
+                        gris = 0;
                     } else {
-                        gris = 255; //al infinito
+                        gris = 255;
                     }
-
                     data2[p] = gris;
                     data2[p+1] = gris;
                     data2[p+2] = gris;
                 }
                 ctx2.putImageData(img2, 0, 0);
             }
-            //Cargar modelo
             const cargarModelo = async () => {
                 console.log("Cargando modelo...");
                 modelo = await tf.loadLayersModel("model.json");
                 console.log("Modelo cargado...");
             }
             cargarModelo();
-
             const iniciar_juego = () => {
                 var numero = Math.floor(Math.random() * 10);
                 numero_seleccionado = numero;
@@ -217,7 +202,6 @@
                 iniciar_juego();
             }
             iniciar_juego();
-
             const reproducir = () => {
                 var audio = new Audio("audios/" + numeros[numero_seleccionado] + ".mp3");
                 audio.play();
